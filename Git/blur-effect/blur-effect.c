@@ -54,15 +54,46 @@ void gaussian_matrix(int kernel){
 
 int main(){
     printf("Starting with opencv\n");
-    int kernel = 3;
+    int kernel = 5;
     gaussian_matrix(kernel);
     //Llamamos la imagen que queremos usar
-    IplImage* img = cvLoadImage("4k.jpeg",CV_LOAD_IMAGE_COLOR);
-    cvNamedWindow("opencvtest",CV_WINDOW_AUTOSIZE);
-    cvShowImage("opencvtest",img);
- //   printf("%d\n", CV_IMAGE_ELEM(img, uchar, 10, (90*3)+1));    
-  //  cvWaitKey(0);
-  //  cvReleaseImage(&img);
+    IplImage* img = cvLoadImage("4k.jpg",CV_LOAD_IMAGE_COLOR);
+   //  cvNamedWindow("opencvtest",CV_WINDOW_AUTOSIZE);
+   //  cvShowImage("opencvtest",img);
+   //  printf("%d\n", CV_IMAGE_ELEM(img, uchar, 10, (90*3)+1));    
+   // cvWaitKey(0);
+   // cvReleaseImage(&img);
+    printf("entre" );
+      int row, col;
+      int** mb;
+      int** mg;
+      int** mr;
+    //Creamos el espacio en memoria de la matriz gaussiana
+    mb = (int**) malloc( sizeof(int*) * img->width);
+    mg = (int**) malloc( sizeof(int*) * img->width);
+    mr = (int**) malloc( sizeof(int*) * img->width);
+    for(int i=0; i< img->width; i++){
+        mb[i] = (int*) malloc(sizeof(int) * img->height);
+        mg[i] = (int*) malloc(sizeof(int) * img->height);
+        mr[i] = (int*) malloc(sizeof(int) * img->height);
+    }
+ uchar b, g, r;
+
+ for( row = 0; row < img->height; row++ )
+ {
+   for ( col = 0; col < img->width; col++ )
+   {
+     b = CV_IMAGE_ELEM( img, uchar, row, col * 3 );
+     mb[row][col]=b;
+     g = CV_IMAGE_ELEM( img, uchar, row, col * 3 + 1 );
+     mg[row][col]=g;
+     r = CV_IMAGE_ELEM( img, uchar, row, col * 3 + 2 );
+     mr[row][col]=r;
+     //printf("%.d,%.d,%.d\t ", b,g,r);
+     //printf("%c\n", CV_IMAGE_ELEM( img, uchar, row, col * 3 ) );
+   }
+ }
+
    
     return 0;
 }
