@@ -1,0 +1,2 @@
+gcc -ggdb `pkg-config --cflags opencv` -o `basename blur-effect.c .c` blur-effect.c `pkg-config --libs opencv` -lm
+
