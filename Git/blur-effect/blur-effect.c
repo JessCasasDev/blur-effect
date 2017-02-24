@@ -60,14 +60,22 @@ int main(int args, char *argv[]){
     int img_height = img->height;
     
     int k = kernel/2;
-    for(int i=k; i<img_height-k; i++){       
-        for (int j=k; j<img_width-k; j++){
+    for(int i=0; i<img_height; i++){       
+        for (int j=0; j<img_width; j++){
             CvScalar p, s;           
             double blue=0.0, red=0.0, green=0.0;
-            int neighbours = 0;
             for(int x=-k; x<=k; x++){
-                for(int y=-k; y<=k; y++){
-                    s = cvGet2D(img,i+x,j+y);
+                for(int y=-k; y<=k; y++){             
+                    int pos_x, pos_y;
+                    if(i+x<0) pos_x = i+x*-1;
+                    else if(i+x>=img_height) pos_x = i-x;
+                    else pos_x = i+x;
+                    if(j+y<0) pos_y = j+y*-1;
+                    else if(j+y>=img_width) pos_y = j-y;
+                    else pos_y = j+y;
+                    
+                    s = cvGet2D(img,pos_x,pos_y);
+                    
                     blue += s.val[0]*gaussian[y+k][x+k];
                     green += s.val[1]*gaussian[y+k][x+k];
                     red += s.val[2]*gaussian[y+k][x+k];
