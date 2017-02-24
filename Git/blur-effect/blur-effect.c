@@ -47,7 +47,8 @@ void gaussian_matrix(float ** matrix, int kernel){
 
 int main(){
     printf("Starting with opencv\n");
-    int kernel = 4;
+    int kernel = 5;
+    printf("%d", kernel/2);
     float** gaussian;
     gaussian = (float**) malloc(sizeof(float) * kernel);
     //Creamos el espacio en memoria de la matriz gaussiana
@@ -57,39 +58,39 @@ int main(){
     gaussian_matrix(gaussian, kernel);
     //Llamamos la imagen que queremos usar
     IplImage *img = cvLoadImage("4k.jpeg",CV_LOAD_IMAGE_COLOR);
-    IplImage *result = img;
+    IplImage *result = cvLoadImage("4k.jpeg",CV_LOAD_IMAGE_COLOR);
     uchar *ptr = (uchar *) result->imageData;
     uchar *pixels = (uchar *) img->imageData;
    // uchar *result = (uchar *) img->imageData;
-    int step = img->widthStep/sizeof(float);
+    int step = img->widthStep/sizeof(uchar);
     int channels = img->nChannels;
+    int img_width = img->width;
+    int img_height = img->height;
     //  cvNamedWindow("opencvtest",CV_WINDOW_AUTOSIZE);
    //  cvShowImage("opencvtest",img);
    //  printf("%d\n", CV_IMAGE_ELEM(img, uchar, 10, (90*3)+1));    
    // cvWaitKey(0);
+   int k = kernel/2;
    
-    
    // cvReleaseImage(&img);
    
-    for (int row = kernel/2; row<img->width;row++){
-        for(int col = kernel/2; col<img->height; col++){
-            double red=0.0, green=0.0, blue=0.0;
-            uchar b, g, r;    
-            for (int gau_w = 0; gau_w < kernel; gau_w++){
-                for (int gau_h = 0; gau_h < kernel; gau_h++){
-                    int ix = (row - kernel/2 + gau_h + img->width)%img->width;
-                    int iy = (col - kernel/2 + gau_w + img->height)%img->height;
-                    b = pixels[iy*img->width + ix *channels+0];
-                    g = pixels[iy*img->width + ix *channels+1];
-                    r = pixels[iy*img->width + ix *channels+2];
-                    blue += b * gaussian[gau_w][gau_h];
-                    green += g * gaussian[gau_w][gau_h];
-                    red += r * gaussian[gau_w][gau_h];
+    for (int i = k; i<img_width-k;i++){
+        for(int j = k; j<img_height-k; j++){
+            float red=0.0, green=0.0, blue=0.0;
+            uchar *b, *g, *r;    
+            for (int g_i = -k; g_i < k; g_i++){
+                for (int g_j = -k; g_j < k; g_j++){
+                    b = &pixels[(i+g_i)*step+(j+g_j)*channels+0];
+                    g = &pixels[(i+g_i)*step+(j+g_j)*channels+1];
+                    r = &pixels[(i+g_i)*step+(j+g_j)*channels+2];
+                    blue += (unsigned char)&b * (unsigned char)gaussian[g_j+k][g_i+k];
+                    green += (unsigned char)g * (unsigned char)gaussian[g_j+k][g_i+k];
+                    red += (unsigned char)r * (unsigned char)gaussian[g_j+k][g_i+k];
                 }
             }
-            ptr[row*step+col*channels + 0]= blue;
-            ptr[row*step+col*channels + 1]= green;
-            ptr[row*step+col*channels + 2]= red;
+            ptr[ i * step +j*channels + 0]= blue;
+            ptr[ i * step +j*channels + 1]= green;
+            ptr[i*step +j*channels + 2]= red;
         }
     }
     cvNamedWindow("opencvtest",CV_WINDOW_AUTOSIZE);
