@@ -47,7 +47,7 @@ void gaussian_matrix(float ** matrix, int kernel){
 
 int main(){
     printf("Starting with opencv\n");
-    int kernel = 5;
+    int kernel = 4;
     printf("%d", kernel/2);
     float** gaussian;
     gaussian = (float**) malloc(sizeof(float) * kernel);
@@ -70,7 +70,55 @@ int main(){
    //  cvShowImage("opencvtest",img);
    //  printf("%d\n", CV_IMAGE_ELEM(img, uchar, 10, (90*3)+1));    
    // cvWaitKey(0);
+   
    int k = kernel/2;
+   for(int i=0; i<img_height; i++){       
+       for (int j=0; j<img_width; j++){
+           CvScalar p;
+           double blue=0, red=0, green=0;
+           int neighbours = 0;
+           CvScalar s;
+           for(int x=i-k; x<i+k; x++){
+               for(int y=j-k; y<j+k; y++){
+                   if(x>=0 && x<img_height && y>=0 && y<img_width){
+                    s = cvGet2D(img,x,y);
+                    blue += s.val[0];
+                    green += s.val[1];
+                    red += s.val[2];
+                   
+                    neighbours++;
+                       
+                }
+               }      
+            }
+            p.val[0] = blue/neighbours;
+            p.val[1] = green/neighbours;
+            p.val[2] = red/neighbours;
+            cvSet2D(result,i,j,p);
+        }   
+    }
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   /*
    
    // cvReleaseImage(&img);
    
@@ -83,16 +131,16 @@ int main(){
                     b = &pixels[(i+g_i)*step+(j+g_j)*channels+0];
                     g = &pixels[(i+g_i)*step+(j+g_j)*channels+1];
                     r = &pixels[(i+g_i)*step+(j+g_j)*channels+2];
-                    blue += (unsigned char)&b * (unsigned char)gaussian[g_j+k][g_i+k];
-                    green += (unsigned char)g * (unsigned char)gaussian[g_j+k][g_i+k];
-                    red += (unsigned char)r * (unsigned char)gaussian[g_j+k][g_i+k];
+                    blue += b * &pixels[(i)*step+(j)*channels+0];
+                    green += g * &pixels[(i)*step+(j)*channels+0];
+                    red += r * &pixels[(i)*step+(j)*channels+0];
                 }
             }
             ptr[ i * step +j*channels + 0]= blue;
             ptr[ i * step +j*channels + 1]= green;
             ptr[i*step +j*channels + 2]= red;
         }
-    }
+    }*/
     cvNamedWindow("opencvtest",CV_WINDOW_AUTOSIZE);
     cvShowImage("opencvtest",result);
    //  printf("%d\n", CV_IMAGE_ELEM(img, uchar, 10, (90*3)+1));    
