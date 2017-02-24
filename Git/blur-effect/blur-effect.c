@@ -26,10 +26,10 @@ void gaussian_matrix(float ** matrix, int kernel){
         }        
         value_y--;
     }
+    //Para que la suma de la matriz de 1 la normalizamos
     for(int i=0; i<kernel; i++){
-        for(int j=0; j<kernel; j++){
-        //Para que la suma de la matriz de 1 la normalizamos
-            matrix[i][j] = matrix[i][j] / sum;
+        for(int j=0; j<kernel; j++){        
+           matrix[i][j] = matrix[i][j] / sum;
         }
     }
 }
@@ -43,11 +43,13 @@ int main(int args, char *argv[]){
         return 0;
     }
     float** gaussian;
-    //printf("%d\n", kernel);
-    gaussian = (float**) malloc(sizeof(float) * kernel);
+    gaussian = (float**) malloc(kernel * sizeof(float *) );
     //Creamos el espacio en memoria de la matriz gaussiana
     for(int i=0; i< kernel; i++){
-        gaussian[i] = (float*) malloc(sizeof(float) * kernel);
+        gaussian[i] = (float *) malloc(kernel * sizeof(float));
+    }
+    if(gaussian == NULL){
+        printf("No memory space");
     }
     gaussian_matrix(gaussian, kernel);
     //Llamamos la imagen que queremos usar
@@ -69,11 +71,8 @@ int main(int args, char *argv[]){
                     blue += s.val[0]*gaussian[y+k][x+k];
                     green += s.val[1]*gaussian[y+k][x+k];
                     red += s.val[2]*gaussian[y+k][x+k];
-                    neighbours++;
-                   // printf("#####R:%f,G:%f,B:%f,N:%d\n", gaussian[y+k][x+k],green/neighbours,blue/neighbours, neighbours);
                 }      
             }
-            //printf("R:%f,G:%f,B:%f\n", red/neighbours,green/neighbours,blue/neighbours);
             p = cvGet2D(result,i,j);
             p.val[0] = blue;
             p.val[1] = green;
@@ -86,6 +85,10 @@ int main(int args, char *argv[]){
     cvShowImage("Image Filtered",result);
     cvWaitKey(0);   
     //Liberamos memoria de la matriz gaussiana
-    free(*gaussian);
+    for(int i=0; i<kernel;i++){
+        float *cur = gaussian[i];
+        free(cur);
+    }
+    free(gaussian);
     return 0;
 }
