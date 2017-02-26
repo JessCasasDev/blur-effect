@@ -7,6 +7,7 @@
 #define PI 3.141592653589793238462643383
 #define e  2.718281828459045235360287471
 #define MAX_THREADS 16
+#define sigma  1.9
 
 IplImage *result;
 IplImage *img;
@@ -20,23 +21,14 @@ struct Params{
 }parameters[MAX_THREADS];
 
 void gaussian_matrix(){
-    float sigma = 5.7;
-    float value_x = floor(kernel/2)*-1;
-    float value_y = floor(kernel/2);
-    float constant = 1/(2*PI*(sigma*sigma));
-    float sum = 0;
     
+    float sum = 0;
     for(int i=0; i < kernel; i++){        
         for(int j=0; j < kernel; j++){ 
             //Calculamos el valor de (1/2+pi*sigma)*e⁻(x²+y²/2*sigma²) 
-           gaussian[i][j] = constant * pow(e, -(((value_x*value_x)+ (value_y*value_y))/(2*sigma*sigma)));    
-           value_x++;
-           if(value_x==floor(kernel/2)+1){
-               value_x = floor(kernel/2)*-1;
-            }
-            sum += gaussian[i][j];    
+           gaussian[i][j] = (1/(2*PI*(sigma*sigma))) * pow(e, -(pow(floor(kernel/2),2)+ pow(floor(kernel/2),2)))/(2*sigma*sigma);    
+           sum += gaussian[i][j];    
         }        
-        value_y--;
     }
     //Para que la suma de la matriz de 1 la normalizamos
     for(int i=0; i<kernel; i++){
@@ -50,28 +42,28 @@ void* blur(void *arguments){
     struct Params *param;
     param = arguments;
     int k = kernel/2;
-    int img_width = img->width;
-    int img_height = img->height;
-    
+    //Recorremos la matriz de la imagen original
     for(int i=param->begin; i<param->end; i++){       
-        for (int j=0; j<img_width; j++){
+        for (int j=0; j<img->width; j++){
             CvScalar p, s;           
-            double blue=0.0, red=0.0, green=0.0, neigb = 0.0;
+            double blue=0.0, red=0.0, green=0.0;
             for(int x=-k; x<=k; x++){
                 for(int y=-k; y<=k; y++){             
                     int pos_x, pos_y;
                     if(i+x<0) pos_x = i+x*-1;
-                    else if(i+x>=img_height) pos_x = i-x;
+                    else if(i+x>=img->height) pos_x = i-x;
                     else pos_x = i+x;
                     if(j+y<0) pos_y = j+y*-1;
-                    else if(j+y>=img_width) pos_y = j-y;
+                    else if(j+y>=img->width) pos_y = j-y;
                     else pos_y = j+y;          
+                    //Obtenemos la posicion del pixel                                                            
                     s = cvGet2D(img,pos_x,pos_y);                    
                     blue += s.val[0]*gaussian[y+k][x+k];
                     green += s.val[1]*gaussian[y+k][x+k];
                     red += s.val[2]*gaussian[y+k][x+k];
                 }      
             }
+            //Modificamos la posicion del pixel de la imagen clonada
             p = cvGet2D(result,i,j);
             p.val[0] = blue;
             p.val[1] = green;
@@ -92,8 +84,8 @@ int main(int args, char *argv[]){
         return 0;
     }
     img = cvLoadImage(address,CV_LOAD_IMAGE_COLOR);
-    gaussian = (float**) malloc(kernel * sizeof(float *) );
     //Creamos el espacio en memoria de la matriz gaussiana
+    gaussian = (float**) malloc(kernel * sizeof(float *) );    
     for(int i=0; i< kernel; i++){
         gaussian[i] = (float *) malloc(kernel * sizeof(float));
     }
@@ -101,28 +93,26 @@ int main(int args, char *argv[]){
         printf("No memory space");
     }
     gaussian_matrix();
+    //Clonamos la imagen del resultado
     result =  cvCloneImage(img);
-    int div = img->height/n_threads;    
-    int pid;
-      
+    
+    //Creamos los hilos
     for(int i=0; i<n_threads; i++){    
-        parameters[i].begin = i * div;
-        parameters[i].end = parameters[i].begin + div - 1;      
+        parameters[i].begin = i * (img->height/n_threads);
+        parameters[i].end = parameters[i].begin + (img->height/n_threads)-1;      
     }
     
     for(int i=0; i<n_threads; i++){
-        pid = pthread_create(&th_id[i], NULL, &blur, (void *)&parameters[i]);
-        if(pid){
+        if(pthread_create(&th_id[i], NULL, blur, (void *)&parameters[i])!=0)
             perror("Thread could not be created");
-        }
+        
     }
     
     for(int i=0; i<n_threads; i++){
-        pid = pthread_join(th_id[i], NULL);
-        if(pid){
+        if( pthread_join(th_id[i], NULL) != 0)
             perror("Thread could not end");
-        }
     }
+    //Mostramos la imagen con el filtro
     cvNamedWindow("Image Filtered",CV_WINDOW_NORMAL);
     cvShowImage("Image Filtered", result);
     cvWaitKey(0);   

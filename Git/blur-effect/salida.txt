@@ -1,0 +1,38 @@
+%%%%%%%%%%%%%%%%%%%%%
+ejecucion de una imagen de 720 pixeles
+ejecucion con 5 de kernel y 2 hilos
+2.50user 0.14system 0:06.41elapsed 41%CPU (0avgtext+0avgdata 42012maxresident)k
+2032inputs+0outputs (28major+3670minor)pagefaults 0swaps
+ejecucion con 5 de kernel y 4 hilos
+2.26user 0.06system 0:03.86elapsed 60%CPU (0avgtext+0avgdata 42752maxresident)k
+0inputs+0outputs (0major+4194minor)pagefaults 0swaps
+ejecucion con 17 de kernel y 2 hilo
+25.90user 0.06system 0:28.38elapsed 91%CPU (0avgtext+0avgdata 44100maxresident)k
+0inputs+0outputs (0major+4181minor)pagefaults 0swaps
+ejecucion con 17 de kernel y 4 hilos
+27.22user 0.07system 0:29.74elapsed 91%CPU (0avgtext+0avgdata 44588maxresident)k
+0inputs+0outputs (0major+3689minor)pagefaults 0swaps
+ejecucion de una imagen de 1080 pixeles
+ejecucion con 5 de kernel y 2 hilo
+6.14user 0.20system 0:08.43elapsed 75%CPU (0avgtext+0avgdata 54480maxresident)k
+1304inputs+0outputs (0major+4494minor)pagefaults 0swaps
+ejecucion con 5 de kernel y 4 hilos
+ejecucion con 17 de kernel y 2 hilo
+62.80user 0.08system 1:05.82elapsed 95%CPU (0avgtext+0avgdata 55092maxresident)k
+0inputs+0outputs (0major+4503minor)pagefaults 0swaps
+ejecucion con 17 de kernel y 4 hilos
+65.42user 0.08system 1:09.37elapsed 94%CPU (0avgtext+0avgdata 55316maxresident)k
+0inputs+0outputs (0major+4494minor)pagefaults 0swaps
+ejecucion de una imagen de 4k pixeles
+ejecucion con 5 de kernel y 2 hilo
+27.80user 0.68system 0:37.49elapsed 75%CPU (0avgtext+0avgdata 128188maxresident)k
+2424inputs+0outputs (0major+22709minor)pagefaults 0swaps
+ejecucion con 7 de kernel y 4 hilos
+24.54user 0.20system 0:28.34elapsed 87%CPU (0avgtext+0avgdata 130780maxresident)k
+2464inputs+0outputs (4major+23244minor)pagefaults 0swaps
+ejecucion con 17 de kernel y 2 hilos
+256.21user 2.50system 5:15.22elapsed 82%CPU (0avgtext+0avgdata 121764maxresident)k
+40128inputs+0outputs (209major+19163minor)pagefaults 0swaps
+ejecucion con 17 de kernel y 4 hilos
+269.03user 1.23system 6:37.54elapsed 67%CPU (0avgtext+0avgdata 129284maxresident)k
+27296inputs+0outputs (184major+11847minor)pagefaults 0swaps
