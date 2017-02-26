@@ -104,8 +104,7 @@ int main(int args, char *argv[]){
     
     for(int i=0; i<n_threads; i++){
         if(pthread_create(&th_id[i], NULL, blur, (void *)&parameters[i])!=0)
-            perror("Thread could not be created");
-        
+            perror("Thread could not be created");        
     }
     
     for(int i=0; i<n_threads; i++){
