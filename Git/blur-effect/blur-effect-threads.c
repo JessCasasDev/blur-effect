@@ -126,7 +126,7 @@ int main(int args, char *argv[]){
             perror("Thread could not end");
         }
     }
-    cvNamedWindow("Image Filtered",CV_WINDOW_AUTOSIZE);
+    cvNamedWindow("Image Filtered",CV_WINDOW_NORMAL);
     cvShowImage("Image Filtered", result);
     cvWaitKey(0);   
     //Liberamos memoria de la matriz gaussiana

@@ -63,7 +63,7 @@ int main(int args, char *argv[]){
     for(int i=0; i<img_height; i++){       
         for (int j=0; j<img_width; j++){
             CvScalar p, s;           
-            double blue=0.0, red=0.0, green=0.0;
+            double blue=0.0, red=0.0, green=0.0, neighbours = 0.0;
             for(int x=-k; x<=k; x++){
                 for(int y=-k; y<=k; y++){             
                     int pos_x, pos_y;
@@ -81,7 +81,7 @@ int main(int args, char *argv[]){
                     red += s.val[2]*gaussian[y+k][x+k];
                 }      
             }
-            p = cvGet2D(result,i,j);
+            p = cvGet2D(img,i,j);
             p.val[0] = blue;
             p.val[1] = green;
             p.val[2] = red;
@@ -89,7 +89,7 @@ int main(int args, char *argv[]){
             cvSet2D(result,i,j,p);
         }   
     }   
-    cvNamedWindow("Image Filtered",CV_WINDOW_AUTOSIZE);
+    cvNamedWindow("Image Filtered",CV_WINDOW_NORMAL);
     cvShowImage("Image Filtered",result);
     cvWaitKey(0);   
     //Liberamos memoria de la matriz gaussiana
