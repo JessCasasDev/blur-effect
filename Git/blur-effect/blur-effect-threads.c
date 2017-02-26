@@ -6,18 +6,20 @@
 
 #define PI 3.141592653589793238462643383
 #define e  2.718281828459045235360287471
+#define MAX_THREADS 16
 
 IplImage *result;
 IplImage *img;
+int kernel;
+float **gaussian;
+pthread_t th_id[MAX_THREADS];
 
 struct Params{
-    int kernel;
     int begin;
-    int end;    
-    float **gaussian;
-};
+    int end;  
+}parameters[MAX_THREADS];
 
-void gaussian_matrix(float ** matrix, int kernel){
+void gaussian_matrix(){
     float sigma = 5.7;
     float value_x = floor(kernel/2)*-1;
     float value_y = floor(kernel/2);
@@ -27,36 +29,34 @@ void gaussian_matrix(float ** matrix, int kernel){
     for(int i=0; i < kernel; i++){        
         for(int j=0; j < kernel; j++){ 
             //Calculamos el valor de (1/2+pi*sigma)*e⁻(x²+y²/2*sigma²) 
-           matrix[i][j] = constant * pow(e, -(((value_x*value_x)+ (value_y*value_y))/(2*sigma*sigma)));    
+           gaussian[i][j] = constant * pow(e, -(((value_x*value_x)+ (value_y*value_y))/(2*sigma*sigma)));    
            value_x++;
            if(value_x==floor(kernel/2)+1){
                value_x = floor(kernel/2)*-1;
             }
-            sum += matrix[i][j];    
+            sum += gaussian[i][j];    
         }        
         value_y--;
     }
     //Para que la suma de la matriz de 1 la normalizamos
     for(int i=0; i<kernel; i++){
         for(int j=0; j<kernel; j++){        
-           matrix[i][j] = matrix[i][j] / sum;
+           gaussian[i][j] = gaussian[i][j] / sum;
         }
     }
 }
 
 void* blur(void *arguments){
-    struct Params *param = (struct Params *) arguments;
-    int kernel = param->kernel;
-    int begin = param->begin;
-    int end = param->end;    
-    float **gaussian = param->gaussian;
+    struct Params *param;
+    param = arguments;
     int k = kernel/2;
     int img_width = img->width;
     int img_height = img->height;
-    for(int i=begin; i<end; i++){       
+    
+    for(int i=param->begin; i<param->end; i++){       
         for (int j=0; j<img_width; j++){
             CvScalar p, s;           
-            double blue=0.0, red=0.0, green=0.0;
+            double blue=0.0, red=0.0, green=0.0, neigb = 0.0;
             for(int x=-k; x<=k; x++){
                 for(int y=-k; y<=k; y++){             
                     int pos_x, pos_y;
@@ -66,7 +66,7 @@ void* blur(void *arguments){
                     if(j+y<0) pos_y = j+y*-1;
                     else if(j+y>=img_width) pos_y = j-y;
                     else pos_y = j+y;          
-                    s = cvGet2D(img,pos_x,pos_y);
+                    s = cvGet2D(img,pos_x,pos_y);                    
                     blue += s.val[0]*gaussian[y+k][x+k];
                     green += s.val[1]*gaussian[y+k][x+k];
                     red += s.val[2]*gaussian[y+k][x+k];
@@ -80,18 +80,18 @@ void* blur(void *arguments){
             cvSet2D(result,i,j,p);
         }   
     }
+    pthread_exit(NULL);
 }
 
 int main(int args, char *argv[]){
     char *address = argv[1];
-    int kernel = atoi(argv[2]);
+    kernel = atoi(argv[2]);
     int n_threads = atoi(argv[3]);
     if(kernel%2==0){
         printf("kernel must be odd\n");
         return 0;
     }
     img = cvLoadImage(address,CV_LOAD_IMAGE_COLOR);
-    float** gaussian;
     gaussian = (float**) malloc(kernel * sizeof(float *) );
     //Creamos el espacio en memoria de la matriz gaussiana
     for(int i=0; i< kernel; i++){
@@ -100,26 +100,23 @@ int main(int args, char *argv[]){
     if(gaussian == NULL){
         printf("No memory space");
     }
-    gaussian_matrix(gaussian, kernel);
+    gaussian_matrix();
     result =  cvCloneImage(img);
     int div = img->height/n_threads;    
     int pid;
-    pthread_t th_id[n_threads];
-    
-    struct Params *parameters;
       
     for(int i=0; i<n_threads; i++){    
-        parameters = malloc(sizeof(struct Params));
-        parameters->kernel = kernel;
-        parameters->gaussian = gaussian;
-        parameters->begin = i * div;
-        parameters->end = div*(1+i);
-        pid = pthread_create(&th_id[i], NULL, &blur, parameters);
+        parameters[i].begin = i * div;
+        parameters[i].end = parameters[i].begin + div - 1;      
+    }
+    
+    for(int i=0; i<n_threads; i++){
+        pid = pthread_create(&th_id[i], NULL, &blur, (void *)&parameters[i]);
         if(pid){
-            free(parameters);
             perror("Thread could not be created");
         }
     }
+    
     for(int i=0; i<n_threads; i++){
         pid = pthread_join(th_id[i], NULL);
         if(pid){
